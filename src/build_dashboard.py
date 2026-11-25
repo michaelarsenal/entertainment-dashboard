@@ -127,33 +127,33 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     </nav>
 
     <!-- Filters Bar -->
-    <section id="filters-bar" class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-3 flex flex-wrap items-center gap-3">
+    <section id="filters-bar" class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-2.5 flex flex-wrap lg:flex-nowrap items-center gap-2">
       <input
         id="search-input"
         type="text"
         placeholder="Search title, critic, genre, platform..."
         oninput="render()"
-        class="flex-1 min-w-[200px] px-3 py-1.5 rounded-md text-xs bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
+        class="flex-1 min-w-[160px] px-2.5 py-1.5 rounded-md text-xs bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)]"
       />
-      <select id="type-filter" onchange="render()" class="px-2.5 py-1.5 rounded-md text-xs bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)]">
-        <option value="all">All Types (Film &amp; TV)</option>
+      <select id="type-filter" onchange="render()" class="px-2 py-1.5 rounded-md text-xs bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] shrink-0">
+        <option value="all">All Types</option>
         <option value="Movie">Movies Only</option>
         <option value="TV">TV Only</option>
       </select>
-      <select id="rating-filter" onchange="render()" class="px-2.5 py-1.5 rounded-md text-xs bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)]">
+      <select id="rating-filter" onchange="render()" class="px-2 py-1.5 rounded-md text-xs bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] shrink-0">
         <option value="0">All Ratings</option>
         <option value="5">5★ Only</option>
         <option value="4">4★ &amp; Above</option>
         <option value="3">3★ &amp; Above</option>
       </select>
-      <select id="platform-filter" onchange="render()" class="px-2.5 py-1.5 rounded-md text-xs bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)]">
+      <select id="platform-filter" onchange="render()" class="px-2 py-1.5 rounded-md text-xs bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] max-w-[165px] truncate shrink-0">
         <option value="all">All Platforms</option>
       </select>
-      <select id="period-filter" onchange="render()" class="px-2.5 py-1.5 rounded-md text-xs bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)]">
+      <select id="period-filter" onchange="render()" class="px-2 py-1.5 rounded-md text-xs bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] shrink-0">
         <option value="7" selected>Last 7 days</option>
         <option value="30">Last 30 days</option>
         <option value="90">Last 3 months</option>
-        <option value="all">Last 6 months (All)</option>
+        <option value="all">Last 6 months</option>
       </select>
     </section>
 
@@ -476,10 +476,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
               <span class="truncate"><strong class="text-[var(--foreground)]">Platform:</strong> ${r.platform}</span>
               <span><strong class="text-[var(--foreground)]">Release:</strong> ${r.releaseDate}</span>
             </div>
-            <div class="flex flex-wrap items-center gap-3 text-xs pt-0.5">
-              <a href="${r.guardianUrl}" target="_blank" rel="noopener noreferrer" class="font-medium text-[var(--link)] hover:underline">Read Guardian Review ↗</a>
-              ${r.trailerUrl ? `<a href="${r.trailerUrl}" target="_blank" rel="noopener noreferrer" class="font-medium text-[var(--primary)] hover:underline">▶ Watch Trailer</a>` : ''}
-            </div>
+            ${r.trailerUrl ? `<div class="text-xs pt-0.5"><a href="${r.trailerUrl}" target="_blank" rel="noopener noreferrer" class="font-medium text-[var(--primary)] hover:underline">▶ Watch Trailer</a></div>` : ''}
             ${r.ticketEvent ? `<div class="px-2.5 py-1 rounded bg-[var(--warning)]/10 border border-[var(--warning)]/30 text-[11px]"><span class="font-semibold text-[var(--warning)]">${r.ticketEvent.type}:</span> ${r.ticketEvent.date} — ${r.ticketEvent.venue}</div>` : ''}
             ${userItem?.note ? `<div class="px-2.5 py-1 rounded bg-[var(--background)] border border-[var(--border)] text-[11px] italic">"${userItem.note}" ${userItem.myRating ? `(${userItem.myRating}★)` : ''}</div>` : ''}
           </div>
@@ -531,7 +528,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
                         <span class="px-1.5 py-0.5 rounded text-xs bg-[var(--secondary)]">${r.type}</span>
                       </div>
                       <div class="text-xs text-[var(--muted-foreground)] mt-0.5">
-                        ${r.genre}${r.runtime ? ` • ${r.runtime}` : ''} • ${r.platform} • <a href="${r.guardianUrl}" target="_blank" rel="noopener noreferrer" class="text-[var(--link)] hover:underline">Review ↗</a>${r.trailerUrl ? ` • <a href="${r.trailerUrl}" target="_blank" rel="noopener noreferrer" class="text-[var(--primary)] hover:underline">▶ Trailer</a>` : ''}
+                        ${r.genre}${r.runtime ? ` • ${r.runtime}` : ''} • ${r.platform}${r.trailerUrl ? ` • <a href="${r.trailerUrl}" target="_blank" rel="noopener noreferrer" class="text-[var(--primary)] hover:underline">▶ Trailer</a>` : ''}
                       </div>
                     </div>
                   </div>
@@ -614,7 +611,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
                       <span class="text-xs text-[var(--muted-foreground)]">Guardian: ${renderStars(review.stars)}</span>
                       ${meta.myRating ? `<span class="text-xs text-[var(--foreground)]">• Mine: ${renderStars(meta.myRating)}</span>` : ''}
                     </div>
-                    <div class="text-xs text-[var(--muted-foreground)]">${review.platform} • Release: ${review.releaseDate} • <a href="${review.guardianUrl}" target="_blank" rel="noopener noreferrer" class="text-[var(--link)] hover:underline">Read Review ↗</a></div>
+                    <div class="text-xs text-[var(--muted-foreground)]">${review.platform} • Release: ${review.releaseDate}</div>
                     ${meta.note ? `<p class="text-xs italic pt-1">"${meta.note}"</p>` : ''}
                   </div>
                   <div class="flex flex-wrap items-center gap-2 shrink-0">
