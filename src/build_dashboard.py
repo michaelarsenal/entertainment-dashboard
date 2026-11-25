@@ -423,31 +423,43 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
           : '<span class="px-2 py-0.5 rounded text-xs font-medium bg-[var(--primary)]/15 text-[var(--primary)]">In Watchlist</span>'
         : '';
 
+      const posterHtml = r.posterUrl
+        ? `<img src="${r.posterUrl}" alt="${r.title} poster" loading="lazy" class="w-14 h-20 object-cover rounded-md border border-[var(--border)] shrink-0 bg-[var(--secondary)]" />`
+        : `<div class="w-14 h-20 rounded-md border border-[var(--border)] bg-[var(--secondary)] shrink-0 flex items-center justify-center text-lg" aria-hidden="true">${r.type === 'Movie' ? '🎞️' : '📺'}</div>`;
+
       return `
-        <article class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4 flex flex-col justify-between gap-3 hover:border-[var(--primary)]/60 transition">
+        <article class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-3.5 flex flex-col justify-between gap-2.5 hover:border-[var(--primary)]/60 transition">
           <div class="space-y-2">
-            <div class="flex items-start justify-between gap-2">
-              <div class="flex flex-wrap items-center gap-1.5">
-                <span class="px-2 py-0.5 rounded text-xs font-semibold bg-[var(--secondary)] text-[var(--secondary-foreground)]">${r.type}</span>
-                <span class="px-2 py-0.5 rounded text-xs border ${badge.cls}">${badge.text}</span>
-                ${statusPill}
+            <div class="flex items-start gap-3">
+              ${posterHtml}
+              <div class="flex-1 min-w-0 space-y-1">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex flex-wrap items-center gap-1">
+                    <span class="px-1.5 py-0.5 rounded text-[11px] font-semibold bg-[var(--secondary)] text-[var(--secondary-foreground)]">${r.type}</span>
+                    <span class="px-1.5 py-0.5 rounded text-[11px] border ${badge.cls}">${badge.text}</span>
+                    ${statusPill}
+                  </div>
+                  <div class="text-sm leading-none shrink-0">${renderStars(r.stars)}</div>
+                </div>
+                <h3 class="text-sm font-bold leading-snug truncate"><a href="${r.guardianUrl}" target="_blank" rel="noopener noreferrer" class="hover:underline">${r.title}</a></h3>
+                <p class="text-[11px] text-[var(--muted-foreground)] truncate">
+                  ${r.genre}${r.runtime ? ` • ${r.runtime}` : ''} • ${r.critic} (${r.reviewDate})
+                </p>
               </div>
-              <div class="text-sm leading-none shrink-0">${renderStars(r.stars)}</div>
-            </div>
-            <div>
-              <h3 class="text-sm font-bold leading-snug"><a href="${r.guardianUrl}" target="_blank" rel="noopener noreferrer" class="hover:underline">${r.title}</a></h3>
-              <p class="text-xs text-[var(--muted-foreground)] mt-0.5">${r.genre} • By ${r.critic} (${r.reviewDate})</p>
             </div>
             <p class="text-xs text-[var(--foreground)]/90 line-clamp-2">${r.verdict}</p>
-            <div class="text-xs text-[var(--muted-foreground)] space-y-1 pt-1">
-              <div><strong class="text-[var(--foreground)]">Platform:</strong> ${r.platform}</div>
-              <div><strong class="text-[var(--foreground)]">Release:</strong> ${r.releaseDate}</div>
-              <div><a href="${r.guardianUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 font-medium text-[var(--link)] hover:underline">Read Guardian Review ↗</a></div>
-              ${r.ticketEvent ? `<div class="mt-1.5 px-2.5 py-1.5 rounded bg-[var(--warning)]/10 border border-[var(--warning)]/30 text-xs"><span class="font-semibold text-[var(--warning)]">${r.ticketEvent.type}:</span> ${r.ticketEvent.date} — ${r.ticketEvent.venue}</div>` : ''}
-              ${userItem?.note ? `<div class="mt-1.5 px-2.5 py-1.5 rounded bg-[var(--background)] border border-[var(--border)] text-xs italic">"${userItem.note}" ${userItem.myRating ? `(${userItem.myRating}★)` : ''}</div>` : ''}
+            <div class="text-[11px] text-[var(--muted-foreground)] flex flex-wrap items-center justify-between gap-x-3 gap-y-1 pt-0.5">
+              <span class="truncate"><strong class="text-[var(--foreground)]">Platform:</strong> ${r.platform}</span>
+              <span><strong class="text-[var(--foreground)]">Release:</strong> ${r.releaseDate}</span>
             </div>
+            <div class="flex flex-wrap items-center gap-3 text-xs pt-0.5">
+              <a href="${r.guardianUrl}" target="_blank" rel="noopener noreferrer" class="font-medium text-[var(--link)] hover:underline">Read Guardian Review ↗</a>
+              ${r.trailerUrl ? `<a href="${r.trailerUrl}" target="_blank" rel="noopener noreferrer" class="font-medium text-[var(--primary)] hover:underline">▶ Watch Trailer</a>` : ''}
+            </div>
+            ${r.ticketEvent ? `<div class="px-2.5 py-1 rounded bg-[var(--warning)]/10 border border-[var(--warning)]/30 text-[11px]"><span class="font-semibold text-[var(--warning)]">${r.ticketEvent.type}:</span> ${r.ticketEvent.date} — ${r.ticketEvent.venue}</div>` : ''}
+            ${userItem?.note ? `<div class="px-2.5 py-1 rounded bg-[var(--background)] border border-[var(--border)] text-[11px] italic">"${userItem.note}" ${userItem.myRating ? `(${userItem.myRating}★)` : ''}</div>` : ''}
           </div>
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-[var(--border)]">
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--border)]">
             <div class="flex items-center gap-1.5">
               <button onclick="quickToggleWatchlist('${r.id}')" class="px-2.5 py-1 rounded text-xs font-medium ${userItem ? 'bg-[var(--secondary)] text-[var(--foreground)]' : 'bg-[var(--primary)] text-[var(--primary-foreground)]'}">${userItem ? 'Edit / Notes' : '+ Watchlist'}</button>
               <button onclick="quickMarkSeen('${r.id}')" class="px-2.5 py-1 rounded text-xs border border-[var(--border)] hover:border-[var(--success)]">${userItem?.status === 'seen' ? '✓ Seen' : 'Mark Seen'}</button>
@@ -487,14 +499,15 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
                       <div class="text-xs font-mono font-semibold">${r.releaseDate}</div>
                       <span class="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[11px] border ${badge.cls}">${badge.text}</span>
                     </div>
+                    ${r.posterUrl ? `<img src="${r.posterUrl}" alt="${r.title}" loading="lazy" class="w-9 h-12 object-cover rounded border border-[var(--border)] shrink-0" />` : ''}
                     <div>
-                      <div class="flex items-center gap-2">
+                      <div class="flex flex-wrap items-center gap-2">
                         <span class="text-sm">${renderStars(r.stars)}</span>
                         <a href="${r.guardianUrl}" target="_blank" rel="noopener noreferrer" class="text-sm font-bold hover:underline">${r.title}</a>
                         <span class="px-1.5 py-0.5 rounded text-xs bg-[var(--secondary)]">${r.type}</span>
                       </div>
                       <div class="text-xs text-[var(--muted-foreground)] mt-0.5">
-                        ${r.platform} • ${r.critic} • <a href="${r.guardianUrl}" target="_blank" rel="noopener noreferrer" class="text-[var(--link)] hover:underline">Read Review ↗</a>
+                        ${r.genre}${r.runtime ? ` • ${r.runtime}` : ''} • ${r.platform} • <a href="${r.guardianUrl}" target="_blank" rel="noopener noreferrer" class="text-[var(--link)] hover:underline">Review ↗</a>${r.trailerUrl ? ` • <a href="${r.trailerUrl}" target="_blank" rel="noopener noreferrer" class="text-[var(--primary)] hover:underline">▶ Trailer</a>` : ''}
                       </div>
                     </div>
                   </div>

@@ -4,12 +4,16 @@ from datetime import date
 import json
 from pathlib import Path
 
+from unittest.mock import MagicMock
+
 from src.build_dashboard import build_dashboard
 from src.fetch_guardian import (
     MAX_LOOKBACK_DAYS,
     clamp_lookback_days,
     demo_reviews,
+    enrich_with_tmdb,
     extract_title,
+    format_runtime,
     normalize_guardian_item,
 )
 
@@ -79,3 +83,44 @@ def test_build_dashboard_generates_html(tmp_path: Path):
     assert "LIVE GUARDIAN API" in content
     assert "calendar.google.com/calendar/render" in content
     assert "The Glass Harbour" in content
+
+
+def test_format_runtime():
+    assert format_runtime(118) == "1h 58m"
+    assert format_runtime(120) == "2h"
+    assert format_runtime(45) == "45m"
+    assert format_runtime(None) == ""
+
+
+def test_enrich_with_tmdb_populates_poster_genre_runtime_trailer_and_platform():
+    search_resp = MagicMock()
+    search_resp.json.return_value = {
+        "results": [{"id": 999, "release_date": "2026-11-27", "poster_path": "/abc.jpg"}]
+    }
+    detail_resp = MagicMock()
+    detail_resp.json.return_value = {
+        "genres": [{"name": "Drama"}, {"name": "Mystery"}],
+        "runtime": 118,
+        "videos": {"results": [{"site": "YouTube", "type": "Trailer", "key": "xyz123"}]},
+        "watch/providers": {"results": {"GB": {"flatrate": [{"provider_name": "MUBI"}]}}},
+    }
+    session = MagicMock()
+    session.get.side_effect = [search_resp, detail_resp]
+
+    review = {
+        "title": "The Glass Harbour",
+        "type": "Movie",
+        "releaseDate": "2026-11-24",
+        "platform": "UK Cinemas / Streaming",
+        "genre": "Movie",
+        "runtime": "",
+        "posterUrl": "",
+        "trailerUrl": "",
+    }
+    enriched = enrich_with_tmdb(review, "fake-key", session)
+    assert enriched["releaseDate"] == "2026-11-27"
+    assert enriched["posterUrl"] == "https://image.tmdb.org/t/p/w185/abc.jpg"
+    assert enriched["genre"] == "Drama / Mystery"
+    assert enriched["runtime"] == "1h 58m"
+    assert enriched["trailerUrl"] == "https://www.youtube.com/watch?v=xyz123"
+    assert enriched["platform"] == "MUBI"

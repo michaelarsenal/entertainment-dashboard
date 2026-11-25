@@ -80,6 +80,9 @@ def normalize_guardian_item(item: dict[str, Any], media_type: str) -> dict[str, 
         "releaseDate": pub_date,
         "platform": "UK Cinemas / Streaming" if media_type == "Movie" else "UK TV / Streaming",
         "genre": media_type,
+        "runtime": "",
+        "posterUrl": "",
+        "trailerUrl": "",
         "verdict": verdict,
         "guardianUrl": guardian_url,
         "thumbnail": thumbnail,
@@ -87,8 +90,20 @@ def normalize_guardian_item(item: dict[str, Any], media_type: str) -> dict[str, 
     }
 
 
+def format_runtime(minutes: int | None) -> str:
+    """Format runtime in minutes as compact '1h 58m' or '45m'."""
+    if not minutes or minutes <= 0:
+        return ""
+    hrs, mins = divmod(int(minutes), 60)
+    if hrs and mins:
+        return f"{hrs}h {mins}m"
+    if hrs:
+        return f"{hrs}h"
+    return f"{mins}m"
+
+
 def enrich_with_tmdb(review: dict[str, Any], tmdb_key: str, session: requests.Session) -> dict[str, Any]:
-    """Optionally enrich a review with UK release date and watch providers via TMDB."""
+    """Optionally enrich a review with TMDB poster, genre, runtime, trailer, release date, and UK providers."""
     endpoint = "movie" if review["type"] == "Movie" else "tv"
     try:
         search_resp = session.get(
@@ -107,13 +122,42 @@ def enrich_with_tmdb(review: dict[str, Any], tmdb_key: str, session: requests.Se
         if rel_date:
             review["releaseDate"] = rel_date
 
-        prov_resp = session.get(
-            f"{TMDB_API_URL}/{endpoint}/{tmdb_id}/watch/providers",
-            params={"api_key": tmdb_key},
+        poster_path = top.get("poster_path")
+        if poster_path:
+            review["posterUrl"] = f"https://image.tmdb.org/t/p/w185{poster_path}"
+
+        detail_resp = session.get(
+            f"{TMDB_API_URL}/{endpoint}/{tmdb_id}",
+            params={"api_key": tmdb_key, "append_to_response": "watch/providers,videos"},
             timeout=10,
         )
-        prov_resp.raise_for_status()
-        gb = (prov_resp.json().get("results") or {}).get("GB") or {}
+        detail_resp.raise_for_status()
+        details = detail_resp.json()
+
+        if not review["posterUrl"] and details.get("poster_path"):
+            review["posterUrl"] = f"https://image.tmdb.org/t/p/w185{details['poster_path']}"
+
+        genres = [g["name"] for g in (details.get("genres") or []) if g.get("name")]
+        if genres:
+            review["genre"] = " / ".join(genres[:2])
+
+        if endpoint == "movie":
+            review["runtime"] = format_runtime(details.get("runtime"))
+        else:
+            ep_times = details.get("episode_run_time") or []
+            if ep_times:
+                review["runtime"] = f"{format_runtime(ep_times[0])}/ep"
+            elif details.get("number_of_seasons"):
+                seasons = details["number_of_seasons"]
+                review["runtime"] = f"{seasons} season{'s' if seasons != 1 else ''}"
+
+        videos = (details.get("videos") or {}).get("results") or []
+        yt_videos = [v for v in videos if v.get("site") == "YouTube" and v.get("key")]
+        trailer = next((v for v in yt_videos if v.get("type") == "Trailer"), None) or (yt_videos[0] if yt_videos else None)
+        if trailer:
+            review["trailerUrl"] = f"https://www.youtube.com/watch?v={trailer['key']}"
+
+        gb = ((details.get("watch/providers") or {}).get("results") or {}).get("GB") or {}
         flatrate = [p["provider_name"] for p in (gb.get("flatrate") or [])]
         if flatrate:
             review["platform"] = ", ".join(flatrate[:3])
