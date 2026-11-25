@@ -83,6 +83,13 @@ def test_build_dashboard_generates_html(tmp_path: Path):
     assert "LIVE GUARDIAN API" in content
     assert "calendar.google.com/calendar/render" in content
     assert "The Glass Harbour" in content
+    summary_file = tmp_path / "api" / "summary.json"
+    reviews_api_file = tmp_path / "api" / "reviews.json"
+    assert summary_file.exists()
+    assert reviews_api_file.exists()
+    summary = json.loads(summary_file.read_text(encoding="utf-8"))
+    assert summary["totalReviews"] == len(demo_reviews(today=date(2026, 11, 25)))
+    assert "topRatedLast7Days" in summary
 
 
 def test_format_runtime():

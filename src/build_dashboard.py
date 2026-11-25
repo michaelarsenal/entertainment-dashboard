@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import date, timedelta
 import json
 from pathlib import Path
 
@@ -652,8 +653,24 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 """
 
 
+def _compact_item(r: dict) -> dict:
+    return {
+        "title": r.get("title"),
+        "type": r.get("type"),
+        "stars": r.get("stars"),
+        "platform": r.get("platform"),
+        "genre": r.get("genre"),
+        "runtime": r.get("runtime", ""),
+        "reviewDate": r.get("reviewDate"),
+        "releaseDate": r.get("releaseDate"),
+        "verdict": r.get("verdict"),
+        "guardianUrl": r.get("guardianUrl"),
+        "trailerUrl": r.get("trailerUrl", ""),
+    }
+
+
 def build_dashboard(data_path: Path, out_path: Path) -> Path:
-    """Render static HTML dashboard from reviews JSON."""
+    """Render static HTML dashboard and machine-readable JSON endpoints from reviews JSON."""
     payload = json.loads(data_path.read_text(encoding="utf-8"))
     reviews = payload.get("reviews") or []
     generated_at = payload.get("generatedAt") or "2026-11-25"
@@ -669,6 +686,37 @@ def build_dashboard(data_path: Path, out_path: Path) -> Path:
     )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(html_out, encoding="utf-8")
+
+    # Machine-readable JSON endpoints for Gemini / AI / script queries
+    api_dir = out_path.parent / "api"
+    api_dir.mkdir(parents=True, exist_ok=True)
+    (api_dir / "reviews.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    ref_date = date.fromisoformat(generated_at)
+    cutoff_7 = (ref_date - timedelta(days=7)).isoformat()
+    cutoff_30 = (ref_date - timedelta(days=30)).isoformat()
+
+    top_7d = [_compact_item(r) for r in reviews if (r.get("stars") or 0) >= 4 and (r.get("reviewDate") or "") >= cutoff_7]
+    top_30d = [_compact_item(r) for r in reviews if (r.get("stars") or 0) >= 4 and (r.get("reviewDate") or "") >= cutoff_30]
+    upcoming = sorted(
+        [_compact_item(r) for r in reviews if (r.get("releaseDate") or "") >= generated_at and (r.get("stars") or 0) >= 4],
+        key=lambda x: x["releaseDate"] or "",
+    )
+
+    summary = {
+        "generatedAt": generated_at,
+        "lookbackDays": int(lookback_days),
+        "mode": mode.lower(),
+        "totalReviews": len(reviews),
+        "moviesCount": sum(1 for r in reviews if r.get("type") == "Movie"),
+        "tvCount": sum(1 for r in reviews if r.get("type") == "TV"),
+        "fiveStarCount": sum(1 for r in reviews if r.get("stars") == 5),
+        "topRatedLast7Days": top_7d[:25],
+        "topRatedLast30Days": top_30d[:50],
+        "upcomingTopRated": upcoming[:25],
+    }
+    (api_dir / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
     return out_path
 
 
