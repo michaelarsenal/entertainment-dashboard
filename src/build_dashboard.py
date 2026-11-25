@@ -150,10 +150,10 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
         <option value="all">All Platforms</option>
       </select>
       <select id="period-filter" onchange="render()" class="px-2.5 py-1.5 rounded-md text-xs bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)]">
-        <option value="all">Last 6 months (All)</option>
-        <option value="7">Last 7 days</option>
+        <option value="7" selected>Last 7 days</option>
         <option value="30">Last 30 days</option>
         <option value="90">Last 3 months</option>
+        <option value="all">Last 6 months (All)</option>
       </select>
     </section>
 
