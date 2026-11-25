@@ -15,34 +15,34 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
-      --background: #0b0f19;
-      --card: #131a2a;
-      --border: #24304a;
-      --foreground: #f1f5f9;
-      --muted-foreground: #94a3b8;
-      --primary: #3b82f6;
+      --background: #120b14;
+      --card: #1c1120;
+      --border: #36203d;
+      --foreground: #f8f4fa;
+      --muted-foreground: #b8a3c2;
+      --primary: #e11d48;
       --primary-foreground: #ffffff;
-      --secondary: #1e293b;
-      --secondary-foreground: #e2e8f0;
-      --warning: #f59e0b;
-      --success: #10b981;
-      --error: #ef4444;
-      --link: #60a5fa;
+      --secondary: #2a1830;
+      --secondary-foreground: #f3e8f7;
+      --warning: #fbbf24;
+      --success: #34d399;
+      --error: #f87171;
+      --link: #fbbf24;
     }
     html.light {
-      --background: #f8fafc;
+      --background: #fdf8f6;
       --card: #ffffff;
-      --border: #e2e8f0;
-      --foreground: #0f172a;
-      --muted-foreground: #64748b;
-      --primary: #2563eb;
+      --border: #e7d8d3;
+      --foreground: #1f1219;
+      --muted-foreground: #6e5863;
+      --primary: #be123c;
       --primary-foreground: #ffffff;
-      --secondary: #f1f5f9;
-      --secondary-foreground: #1e293b;
+      --secondary: #f5ebe8;
+      --secondary-foreground: #2b1821;
       --warning: #d97706;
       --success: #059669;
       --error: #dc2626;
-      --link: #2563eb;
+      --link: #be123c;
     }
     .line-clamp-2 {
       display: -webkit-box;
@@ -54,13 +54,15 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     .star-empty { color: var(--muted-foreground); opacity: 0.35; }
   </style>
 </head>
-<body class="bg-[var(--background)] text-[var(--foreground)] antialiased min-h-screen p-4 md:p-6">
-  <div class="max-w-7xl mx-auto space-y-5">
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased min-h-screen">
+  <div class="h-1.5 w-full bg-gradient-to-r from-[#e11d48] via-[#fbbf24] to-[#9333ea]"></div>
+  <div class="max-w-7xl mx-auto space-y-5 p-4 md:p-6">
 
     <!-- Header -->
     <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-[var(--border)]">
       <div>
         <div class="flex flex-wrap items-center gap-2.5">
+          <span class="text-xl" aria-hidden="true">🎬</span>
           <span id="mode-badge" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-[var(--primary)] text-[var(--primary-foreground)]">
             __MODE_BADGE__
           </span>
@@ -440,6 +442,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
             <div class="text-xs text-[var(--muted-foreground)] space-y-1 pt-1">
               <div><strong class="text-[var(--foreground)]">Platform:</strong> ${r.platform}</div>
               <div><strong class="text-[var(--foreground)]">Release:</strong> ${r.releaseDate}</div>
+              <div><a href="${r.guardianUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 font-medium text-[var(--link)] hover:underline">Read Guardian Review ↗</a></div>
               ${r.ticketEvent ? `<div class="mt-1.5 px-2.5 py-1.5 rounded bg-[var(--warning)]/10 border border-[var(--warning)]/30 text-xs"><span class="font-semibold text-[var(--warning)]">${r.ticketEvent.type}:</span> ${r.ticketEvent.date} — ${r.ticketEvent.venue}</div>` : ''}
               ${userItem?.note ? `<div class="mt-1.5 px-2.5 py-1.5 rounded bg-[var(--background)] border border-[var(--border)] text-xs italic">"${userItem.note}" ${userItem.myRating ? `(${userItem.myRating}★)` : ''}</div>` : ''}
             </div>
@@ -490,7 +493,9 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
                         <a href="${r.guardianUrl}" target="_blank" rel="noopener noreferrer" class="text-sm font-bold hover:underline">${r.title}</a>
                         <span class="px-1.5 py-0.5 rounded text-xs bg-[var(--secondary)]">${r.type}</span>
                       </div>
-                      <div class="text-xs text-[var(--muted-foreground)] mt-0.5">${r.platform} • ${r.critic}</div>
+                      <div class="text-xs text-[var(--muted-foreground)] mt-0.5">
+                        ${r.platform} • ${r.critic} • <a href="${r.guardianUrl}" target="_blank" rel="noopener noreferrer" class="text-[var(--link)] hover:underline">Read Review ↗</a>
+                      </div>
                     </div>
                   </div>
                   <div class="flex items-center gap-2 shrink-0">
@@ -567,12 +572,12 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
                 <div class="bg-[var(--card)] border border-[var(--border)] rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
                   <div class="space-y-1">
                     <div class="flex flex-wrap items-center gap-2">
-                      <span class="text-sm font-bold">${review.title}</span>
+                      <a href="${review.guardianUrl}" target="_blank" rel="noopener noreferrer" class="text-sm font-bold hover:underline">${review.title}</a>
                       <span class="px-2 py-0.5 rounded text-xs bg-[var(--secondary)]">${review.type}</span>
                       <span class="text-xs text-[var(--muted-foreground)]">Guardian: ${renderStars(review.stars)}</span>
                       ${meta.myRating ? `<span class="text-xs text-[var(--foreground)]">• Mine: ${renderStars(meta.myRating)}</span>` : ''}
                     </div>
-                    <div class="text-xs text-[var(--muted-foreground)]">${review.platform} • Release: ${review.releaseDate}</div>
+                    <div class="text-xs text-[var(--muted-foreground)]">${review.platform} • Release: ${review.releaseDate} • <a href="${review.guardianUrl}" target="_blank" rel="noopener noreferrer" class="text-[var(--link)] hover:underline">Read Review ↗</a></div>
                     ${meta.note ? `<p class="text-xs italic pt-1">"${meta.note}"</p>` : ''}
                   </div>
                   <div class="flex flex-wrap items-center gap-2 shrink-0">
