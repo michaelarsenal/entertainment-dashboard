@@ -15,34 +15,56 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
-      --background: #120b14;
-      --card: #1c1120;
-      --border: #36203d;
-      --foreground: #f8f4fa;
-      --muted-foreground: #b8a3c2;
+      --background: #2b0b17;
+      --card: rgba(48, 15, 30, 0.88);
+      --border: #5e243a;
+      --foreground: #fdf6f9;
+      --muted-foreground: #d8b4c4;
       --primary: #e11d48;
       --primary-foreground: #ffffff;
-      --secondary: #2a1830;
-      --secondary-foreground: #f3e8f7;
+      --secondary: #3f1426;
+      --secondary-foreground: #fbeaf0;
       --warning: #fbbf24;
       --success: #34d399;
       --error: #f87171;
       --link: #fbbf24;
     }
     html.light {
-      --background: #fdf8f6;
-      --card: #ffffff;
-      --border: #e7d8d3;
-      --foreground: #1f1219;
-      --muted-foreground: #6e5863;
+      --background: #fdf6f2;
+      --card: rgba(255, 255, 255, 0.92);
+      --border: #e7d4cc;
+      --foreground: #261018;
+      --muted-foreground: #745562;
       --primary: #be123c;
       --primary-foreground: #ffffff;
-      --secondary: #f5ebe8;
+      --secondary: #f6eae5;
       --secondary-foreground: #2b1821;
       --warning: #d97706;
       --success: #059669;
       --error: #dc2626;
       --link: #be123c;
+    }
+    body.cinema-bg {
+      background-color: var(--background);
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(225, 29, 72, 0.28) 0%, rgba(76, 17, 37, 0.55) 45%, rgba(29, 7, 16, 0.95) 100%);
+      background-attachment: fixed;
+    }
+    html.light body.cinema-bg {
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(251, 191, 36, 0.16) 0%, rgba(225, 29, 72, 0.08) 45%, rgba(253, 246, 242, 1) 100%);
+    }
+    .cinema-watermark {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.055;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cg fill='none' stroke='%23fbbf24' stroke-width='2'%3E%3Ccircle cx='70' cy='70' r='34'/%3E%3Ccircle cx='70' cy='70' r='9'/%3E%3Ccircle cx='70' cy='49' r='6'/%3E%3Ccircle cx='70' cy='91' r='6'/%3E%3Ccircle cx='49' cy='70' r='6'/%3E%3Ccircle cx='91' cy='70' r='6'/%3E%3Crect x='130' y='125' width='68' height='50' rx='6'/%3E%3Cpath d='M130 140h68M144 125l10 15M164 125l10 15M184 125l10 15'/%3E%3C/g%3E%3C/svg%3E");
+      background-repeat: repeat;
+    }
+    html.light .cinema-watermark {
+      opacity: 0.07;
     }
     .line-clamp-2 {
       display: -webkit-box;
@@ -54,9 +76,10 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     .star-empty { color: var(--muted-foreground); opacity: 0.35; }
   </style>
 </head>
-<body class="bg-[var(--background)] text-[var(--foreground)] antialiased min-h-screen">
-  <div class="h-1.5 w-full bg-gradient-to-r from-[#e11d48] via-[#fbbf24] to-[#9333ea]"></div>
-  <div class="max-w-7xl mx-auto space-y-5 p-4 md:p-6">
+<body class="cinema-bg text-[var(--foreground)] antialiased min-h-screen relative">
+  <div class="cinema-watermark" aria-hidden="true"></div>
+  <div class="h-1.5 w-full bg-gradient-to-r from-[#e11d48] via-[#fbbf24] to-[#9333ea] relative z-10"></div>
+  <div class="max-w-7xl mx-auto space-y-5 p-4 md:p-6 relative z-10">
 
     <!-- Header -->
     <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-[var(--border)]">
